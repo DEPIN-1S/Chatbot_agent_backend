@@ -10,39 +10,42 @@ export const db = mysql.createPool({
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'AI_chatBot',
-  port: process.env.PORT || 3000,
+  port: process.env.DB_PORT || 3306,
   waitForConnections: true,
-  connectionLimit: 50,
-  queueLimit: 100,
-  connectTimeout: 180000, // ✅ Correct timeout option
+  connectionLimit: 10, // ⬅ Reduce from 50 to 10
+  queueLimit: 50, // ⬅ Reduce queue limit
+  connectTimeout: 60000, // ✅ Correct timeout option
 });
 
 // Function to check the database connection
 export const connectDB = async () => {
   try {
-    const connection = await db.getConnection(); // Try to get a connection
-    // logger.info('✅ MySQL Database connected successfully');
+    const connection = await db.getConnection();
     console.log('✅ MySQL Database connected successfully');
-    
-    connection.release(); // Release the connection back to the pool
+
+    // Periodically ping the database to keep the connection alive
+    // setInterval(async () => {
+    //   try {
+    //     await db.execute('SELECT 1'); // Keep the connection alive
+    //     console.log('🔄 Keeping MySQL connection alive...');
+    //   } catch (err) {
+    //     console.error('❌ MySQL keep-alive failed:', err.message);
+    //   }
+    // }); // Ping every 60 seconds
+
+    connection.release();
   } catch (error) {
-  console.log('❌ Database connection failed:', error.message); // Log error message
-   
-    
-    setTimeout(connectDB, 5000); // Retry connection after 5 seconds
+    console.error('❌ Database connection failed:', error.message);
+    setTimeout(connectDB, 5000); // Retry after 5 seconds
   }
 };
 
-// Function to handle database errors
-db.on('error', async (err) => {
-console.log('❌ Database error:', err);
 
-  // Handle connection loss or lock timeout
-  if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ER_LOCK_WAIT_TIMEOUT') {
-   console.log('🔄 Reconnecting to the database...');
-    await connectDB(); // Attempt to reconnect
-  }
+// Function to handle database errors
+db.on('error', (err) => {
+  console.error('❌ Database Error:', err);
 });
+
 
 // Connect to the database initially
 connectDB();

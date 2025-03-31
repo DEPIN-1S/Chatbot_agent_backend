@@ -11,7 +11,7 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 export const huggingface = async (prompt, options = {}) => {
   const model = new ChatHuggingFace({
     model: options.model || "mistralai/Mistral-7B",
-    temperature: options.temperature ?? 0.7,
+    temperature: options.temperature ?? 1.5,
     apiKey: process.env.HUGGINGFACE_API_KEY,
   });
 
@@ -29,7 +29,7 @@ export const gemini = async (prompt, options = {}) => {
 
   const model = new ChatGoogleGenerativeAI({
     modelName: options.model,
-    temperature: options.temperature ?? 0.7,
+    temperature: options.temperature ?? 1.5,
     apiKey: process.env.GOOGLE_GENAI_API_KEY,
     maxOutputTokens: options.maxTokens ?? 1024,
   });
